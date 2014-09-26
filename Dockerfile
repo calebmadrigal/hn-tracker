@@ -32,4 +32,8 @@ EXPOSE 22
 RUN apt-get install -y git
 RUN apt-get install -y vim
 
+# Python stuff
+ADD requirements.txt /root/requirements.txt
+RUN pip3 install -r /root/requirements.txt
+
 CMD ["/usr/sbin/sshd", "-D"]
