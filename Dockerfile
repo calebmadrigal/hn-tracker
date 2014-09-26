@@ -5,6 +5,11 @@ RUN apt-get update
 # Change root password
 RUN echo 'root:vagrant' | chpasswd
 
+# Sudo install and config
+RUN apt-get install sudo
+# Enable passwordless sudo for users under the "sudo" group
+RUN sed -i.bkp -e 's/%sudo\s\+ALL=(ALL\(:ALL\)\?)\s\+ALL/%sudo ALL=NOPASSWD:ALL/g' /etc/sudoers
+
 # Create vagrant user
 RUN useradd --create-home -s /bin/bash vagrant
 RUN adduser vagrant sudo
@@ -22,9 +27,6 @@ RUN mkdir /var/run/sshd
 RUN sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 RUN sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
 EXPOSE 22
-
-# Fix sudo
-#RUN chown root:root /usr/bin/sudo && chmod 4755 /usr/bin/sudo
 
 # Dev tools
 RUN apt-get install -y git
