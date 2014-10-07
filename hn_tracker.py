@@ -16,19 +16,22 @@ def parse_news_item(row1, row2):
         try:
             rank = row1[0].text.replace('.', '')
         except Exception:
-            print("Error getting rank: %r" % row1)
+            #print("Error getting rank: %r" % row1)
+            pass
 
         title = ''
         try:
             title = row1[2].text.strip()
         except Exception:
-            print("Error getting title: %r" % row1)
+            #print("Error getting title: %r" % row1)
+            pass
 
         points = '0'
         try:
             points = row2[1].find('span').text
         except Exception:
-            print("Error getting points: %r" % row2)
+            #print("Error getting points: %r" % row2)
+            pass
 
         row2_links = row2[1].find_all('a')
 
@@ -36,18 +39,29 @@ def parse_news_item(row1, row2):
         try:
             user = row2_links[0].text
         except Exception:
-            print("Error getting user: %r" % row2)
+            #print("Error getting user: %r" % row2)
+            pass
+
         comments = '0'
         try:
             comments = row2_links[1].text.split(' ')[0]
         except Exception:
-            print("Error getting comments: %r" % row2)
+            #print("Error getting comments: %r" % row2)
+            pass
 
         hn_id = '0'
         try:
             hn_id = row2_links[1]['href'].split('=')[1]
         except Exception:
-            print("Error getting hn_id: %r" % row2)
+            #print("Error getting hn_id: %r" % row2)
+            pass
+
+            # Try to get hn_id from row1
+            try:
+                hn_id = row1[2].find_all('a')[0]['href'].split('=')[1]
+            except Exception:
+                #print("Unable to get hn_id with backup plan")
+                pass
 
         return [timestamp(), hn_id, rank, title, points, comments, user]
 
@@ -73,7 +87,7 @@ def get_hn_data(page=1):
 def get_pages(pages=3):
     page_rows = []
     for i in range(1, pages+1):
-        print("Getting page", i)
+        print("\tGetting page", i)
         page_rows = page_rows + get_hn_data(i)
     return page_rows
         
