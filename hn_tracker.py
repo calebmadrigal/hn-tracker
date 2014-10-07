@@ -102,7 +102,7 @@ def run():
 
     while 1:
         print("Getting HackerNews", timestamp())
-        hn_data = get_pages()
+        hn_data = get_pages(page_depth)
         write_csv(outfile, hn_data)
         time.sleep(wait_time)
 
