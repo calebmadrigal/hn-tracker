@@ -2,6 +2,8 @@
 
 import time
 import datetime
+import csv
+import re
 import requests
 import bs4
 
@@ -12,58 +14,53 @@ def timestamp():
     return datetime.datetime.now().isoformat()
 
 def parse_news_item(row1, row2):
-        rank = '999999'
+    rank = '999999'
+    try:
+        rank = row1[0].text.replace('.', '')
+    except Exception:
+        pass
+
+    title = ''
+    try:
+        title = row1[2].text.strip()
+    except Exception:
+        pass
+
+    points = '0'
+    try:
+        points = re.search(r'(\d+) points', row2[1].text).groups()[0]
+    except Exception:
+        pass
+
+    row2_links = row2[1].find_all('a')
+
+    user = ''
+    try:
+        user = row2_links[0].text
+    except Exception:
+        pass
+
+    comments = '0'
+    try:
+        comments = row2_links[1].text.split(' ')[0]
+        if comments == 'discuss':
+            comments = '0'
+    except Exception:
+        pass
+
+    hn_id = '0'
+    try:
+        hn_id = row2_links[1]['href'].split('=')[1]
+    except Exception:
+        pass
+
+        # Try to get hn_id from row1
         try:
-            rank = row1[0].text.replace('.', '')
+            hn_id = row1[2].find_all('a')[0]['href'].split('=')[1]
         except Exception:
-            #print("Error getting rank: %r" % row1)
             pass
 
-        title = ''
-        try:
-            title = row1[2].text.strip()
-        except Exception:
-            #print("Error getting title: %r" % row1)
-            pass
-
-        points = '0'
-        try:
-            points = row2[1].find('span').text
-        except Exception:
-            #print("Error getting points: %r" % row2)
-            pass
-
-        row2_links = row2[1].find_all('a')
-
-        user = ''
-        try:
-            user = row2_links[0].text
-        except Exception:
-            #print("Error getting user: %r" % row2)
-            pass
-
-        comments = '0'
-        try:
-            comments = row2_links[1].text.split(' ')[0]
-        except Exception:
-            #print("Error getting comments: %r" % row2)
-            pass
-
-        hn_id = '0'
-        try:
-            hn_id = row2_links[1]['href'].split('=')[1]
-        except Exception:
-            #print("Error getting hn_id: %r" % row2)
-            pass
-
-            # Try to get hn_id from row1
-            try:
-                hn_id = row1[2].find_all('a')[0]['href'].split('=')[1]
-            except Exception:
-                #print("Unable to get hn_id with backup plan")
-                pass
-
-        return [timestamp(), hn_id, rank, title, points, comments, user]
+    return [timestamp(), hn_id, rank, title, points, comments, user]
 
 
 def get_hn_data(page=1):
@@ -92,6 +89,12 @@ def get_pages(pages=3):
     return page_rows
         
 
+def write_csv(filename, data):
+    with open(filename, 'a') as csvfile:
+        writer = csv.writer(csvfile)
+        for row in data:
+            writer.writerow(row)
+
 def run():
     outfile = "hndata.csv"
     page_depth = 3
@@ -100,9 +103,7 @@ def run():
     while 1:
         print("Getting HackerNews", timestamp())
         hn_data = get_pages()
-        with open(outfile, 'a') as f:
-            for row in hn_data:
-                f.write(','.join(row) + '\n')
+        write_csv(outfile, hn_data)
         time.sleep(wait_time)
 
 if __name__ == "__main__":
