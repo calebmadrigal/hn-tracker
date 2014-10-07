@@ -102,8 +102,11 @@ def run():
 
     while 1:
         print("Getting HackerNews", timestamp())
-        hn_data = get_pages(page_depth)
-        write_csv(outfile, hn_data)
+        try:
+            hn_data = get_pages(page_depth)
+            write_csv(outfile, hn_data)
+        except requests.exceptions.ConnectionError:
+            print("Network error")
         time.sleep(wait_time)
 
 if __name__ == "__main__":
