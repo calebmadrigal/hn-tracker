@@ -60,7 +60,7 @@ def parse_news_item(row1, row2):
         except Exception:
             pass
 
-    return [timestamp(), hn_id, rank, title, points, comments, user]
+    return [timestamp(), hn_id, rank, points, comments, title, user]
 
 
 def get_hn_data(page=1):
