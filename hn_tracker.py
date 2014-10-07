@@ -12,21 +12,44 @@ def timestamp():
     return datetime.datetime.now().isoformat()
 
 def parse_news_item(row1, row2):
-    try:
-        rank = row1[0].text.replace('.', '')
-        title = row1[2].text.strip()
-        points = row2[1].find('span').text
+        rank = '999999'
+        try:
+            rank = row1[0].text.replace('.', '')
+        except Exception:
+            print("Error getting rank: %r" % row1)
+
+        title = ''
+        try:
+            title = row1[2].text.strip()
+        except Exception:
+            print("Error getting title: %r" % row1)
+
+        points = '0'
+        try:
+            points = row2[1].find('span').text
+        except Exception:
+            print("Error getting points: %r" % row2)
 
         row2_links = row2[1].find_all('a')
-        user = row2_links[0].text
-        comments = row2_links[1].text.split(' ')[0]
-        hn_id = row2_links[1]['href'].split('=')[1]
+
+        user = ''
+        try:
+            user = row2_links[0].text
+        except Exception:
+            print("Error getting user: %r" % row2)
+        comments = '0'
+        try:
+            comments = row2_links[1].text.split(' ')[0]
+        except Exception:
+            print("Error getting comments: %r" % row2)
+
+        hn_id = '0'
+        try:
+            hn_id = row2_links[1]['href'].split('=')[1]
+        except Exception:
+            print("Error getting hn_id: %r" % row2)
 
         return [timestamp(), hn_id, rank, title, points, comments, user]
-    except (Exception):
-        print("Error parsing row1: %r" % row1)
-        print("Error parsing row2: %r" % row2)
-        return [None, None, None, None, None, None, None]
 
 
 def get_hn_data(page=1):
@@ -51,22 +74,23 @@ def get_pages(pages=3):
     page_rows = []
     for i in range(1, pages+1):
         print("Getting page", i)
-        page_rows.append(get_hn_data(i))
+        page_rows = page_rows + get_hn_data(i)
     return page_rows
         
 
 def run():
     outfile = "hndata.csv"
     page_depth = 3
+    wait_time = 60 # seconds
+
     while 1:
         print("Getting HackerNews", timestamp())
         hn_data = get_pages()
         with open(outfile, 'a') as f:
             for row in hn_data:
-                f.write(','.join(row))
-        time.sleep(1)
+                f.write(','.join(row) + '\n')
+        time.sleep(wait_time)
 
 if __name__ == "__main__":
     run()
-    #print(get_hn_data())
 
